@@ -21,9 +21,8 @@ pip install -e .
 ### Running the Tool
 ```bash
 python -m src.ez_steg_interactive
-```
-```
-Windows (Powershell)
+
+```Powershell
 python .\src\ez_steg_interactive.py
 ```
 
