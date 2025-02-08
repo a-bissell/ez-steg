@@ -8,12 +8,15 @@ Also includes a tool to create carrier .png files for testing and exfiltration p
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ez-steg.git
+git clone https://github.com/a-bissell/ez-steg.git
+
+# Move to folder
+cd ez-steg
 
 # Install requirements
 pip install -r .\requirements.txt
 
-# OPTIONAL: Install the package (only needed for automated tests)
+# OPTIONAL: Install the package (only needed for automated tests/developers)
 pip install -e .
 
 ## Usage
