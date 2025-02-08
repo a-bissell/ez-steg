@@ -78,6 +78,10 @@ class StegoLite:
             ValueError: If data too large or invalid image
         """
         try:
+            # Validate input image format
+            if not input_path.lower().endswith('.png'):
+                raise ValueError("Only PNG images are supported")
+            
             # Load and validate image
             with Image.open(input_path) as img:
                 if img.mode != 'RGB':
