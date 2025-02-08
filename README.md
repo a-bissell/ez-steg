@@ -21,6 +21,7 @@ A user-friendly steganography tool for embedding and extracting data in images, 
 - Capacity checking before operations
 - Secure password handling
 - Human-readable size formatting
+- More tests than you can shake a stick at
 
 ## Installation
 
@@ -31,10 +32,6 @@ cd ez-steg
 
 # Install the package
 pip install -e .
-
-# For development (includes testing dependencies)
-pip install -e ".[dev]"
-```
 
 ## Usage
 
@@ -84,7 +81,7 @@ pytest tests/
 pytest tests/ --cov=src
 
 # Run specific test file
-pytest tests/test_stego_interactive.py
+pytest tests/test_ez_steg_interactive.py
 ```
 
 ### Test Coverage

@@ -2,10 +2,15 @@
 
 A user-friendly terminal interface for the steganography tool that guides you through embedding and extracting hidden data from images.
 
-## Features
+## Interactive Mode Features
 
-### 🎯 Core Operations
-- **Data Embedding**: Hide files or entire folders within PNG images
+### Core Operations
+- Data embedding with password protection
+- Data extraction with password verification
+- Carrier image creation with three sizing methods:
+  1. Based on single file size
+  2. Based on folder size (compressed)
+  3. Based on direct capacity specification (e.g., "14000KB")
 - **Data Extraction**: Recover hidden files from images
 - **Folder Handling**: Automatic compression and extraction of folders
 - **Image Processing**: Automatic conversion to RGB format
@@ -17,16 +22,24 @@ A user-friendly terminal interface for the steganography tool that guides you th
 - Operation confirmation steps
 
 ### 💻 User Interface
-- Beautiful terminal UI with color coding
+- Beautiful terminal UI with color coding :D 
 - Progress indicators for operations
 - Clear error messages and warnings
 - Operation summaries and confirmations
 
 ## Quick Start
 
+1. Launch interactive mode
+2. Choose operation (embed/extract)
+3. Follow prompts for:
+   - Input/output paths
+   - Password
+   - Data selection
+   - Image size preferences (for embedding)
+
 ```bash
 # Run the interactive interface
-python src/stego_interactive.py
+python src/ez_steg_interactive.py
 ```
 
 ### Main Menu
@@ -41,6 +54,13 @@ Main Menu
 ## Usage Guide
 
 ### 📥 Embedding Data
+
+When embedding data, you can:
+1. Use an existing carrier image
+2. Create a new carrier image using one of three methods:
+   - Match a single file's size
+   - Match a compressed folder's size
+   - Specify exact capacity (e.g., "14000KB", "1.5GB")
 
 1. From the main menu, select option `1`
 2. Follow the prompts:
@@ -122,6 +142,13 @@ Proceed with embedding? [y/n]: y
 ```
 
 ### 📤 Extracting Data
+
+When extracting data:
+1. Provide the full path to the carrier image
+2. Enter the correct password used during embedding
+3. Specify a complete output path including filename
+   - For files: use appropriate extension (e.g., "output.txt", "data.zip")
+   - For folders: extraction will create/use the specified directory
 
 1. From the main menu, select option `2`
 2. Follow the prompts:

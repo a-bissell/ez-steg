@@ -2,6 +2,13 @@
 
 A streamlined, secure steganography implementation for hiding data within images. This implementation focuses on security and reliability while maintaining a clean, efficient codebase.
 
+## Version Compatibility
+
+The current implementation uses Format Version 1. When extracting data:
+- Only files created with the same format version can be extracted
+- Attempting to extract data from files created with different versions will raise a ValidationError
+- The error message will indicate the unsupported version number
+
 ## Features
 
 ### Core Security
@@ -13,12 +20,13 @@ A streamlined, secure steganography implementation for hiding data within images
 
 ### Data Format
 - Compact header structure (8 bytes)
-  - Format version (1 byte)
+  - Format version (1 byte, current version: 1)
   - Data length (4 bytes)
   - Salt length (1 byte)
   - Nonce length (2 bytes)
 - Efficient metadata handling
 - Minimal overhead
+- Version compatibility checking
 
 ### Image Processing
 - LSB (Least Significant Bit) steganography
@@ -134,6 +142,8 @@ overhead = header_size + salt_size + nonce_size + auth_tag_size
 - Data too large for image
 - Invalid image format
 - Unsupported format version
+  - Occurs when attempting to extract data from incompatible versions
+  - Error message includes the detected version number
 
 ### SecurityError
 - Encryption failure
@@ -143,17 +153,22 @@ overhead = header_size + salt_size + nonce_size + auth_tag_size
 
 ## Best Practices
 
-1. Password Selection
+1. Version Compatibility
+   - Check the format version when errors occur
+   - Use the same version for embedding and extraction
+   - Keep note of which version was used for important data
+
+2. Password Selection
    - Use strong, unique passwords
    - Minimum 12 characters
    - Mix of letters, numbers, symbols
 
-2. Image Selection
+3. Image Selection
    - Use PNG format
    - Prefer images with sufficient capacity
    - Verify capacity before embedding
 
-3. Data Handling
+4. Data Handling
    - Keep original data backed up
    - Verify extracted data integrity
    - Use secure channels for password sharing
