@@ -4,6 +4,28 @@ A user-friendly steganography tool for embedding and extracting data in images, 
 
 Also includes a tool to create carrier .png files for testing and exfiltration purposes. 
 
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/ez-steg.git
+
+# Install requirements
+pip install -r .\requirements.txt
+
+# OPTIONAL: Install the package (only needed for automated tests)
+pip install -e .
+
+## Usage
+
+### Running the Tool
+```bash
+python -m src.ez_steg_interactive
+
+Windows (Powershell)
+python .\src\ez_steg_interactive.py
+```
+
 ## Features
 
 ### Two Operating Modes
@@ -24,26 +46,6 @@ Also includes a tool to create carrier .png files for testing and exfiltration p
 - Secure password handling
 - Human-readable size formatting
 - More tests than you can shake a stick at
-
-## Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/ez-steg.git
-cd ez-steg
-
-# Install the package
-pip install -e .
-
-## Usage
-
-### Running the Tool
-```bash
-python -m src.ez_steg_interactive
-
-Windows (Powershell)
-python .\src\ez_steg_interactive.py
-```
 
 ### Main Menu Options
 1. **Embed Data**: Hide files or folders in an image
