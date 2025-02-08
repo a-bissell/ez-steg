@@ -110,7 +110,6 @@ ez-steg/
 ├── docs/
 │   └── INTERACTIVE.md        # Detailed usage documentation
 ├── requirements.txt          # Production dependencies
-├── requirements-dev.txt      # Development dependencies
 └── setup.py                 # Package configuration
 ```
 
@@ -118,7 +117,7 @@ ez-steg/
 - Production mode uses strong encryption for data security
 - Passwords must be at least 12 characters
 - Temporary files are securely cleaned up
-- Input validation prevents common security issues
+- Input validation prevents some common security issues
 - No sensitive data is logged or exposed
 
 ## Contributing
@@ -134,4 +133,3 @@ ez-steg/
 ## Acknowledgments
 - Built with Python and various open-source libraries
 - Uses Rich for beautiful terminal formatting
-- Inspired by the need for user-friendly steganography tools 
