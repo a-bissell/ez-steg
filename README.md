@@ -1,6 +1,7 @@
 # EZ-Steg: Easy-to-use Steganography Tool
 
-A user-friendly steganography tool for embedding and extracting data in images, with support for both secure (encrypted) and low-overhead (un-encrypted) modes.
+A user-friendly steganography tool for embedding and extracting data in images.
+Includes support for both secure (encrypted) and low-overhead (unencrypted) modes.
 
 Also includes a tool to create carrier .png files for testing and exfiltration purposes. 
 
