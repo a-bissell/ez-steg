@@ -135,8 +135,8 @@ ez-steg/
 5. Submit a pull request
 
 ## License
-[Your License Here]
+MIT
 
 ## Acknowledgments
 - Built with Python and various open-source libraries
-- Uses Rich for beautiful terminal formatting
+- Uses Rich for terminal formatting
