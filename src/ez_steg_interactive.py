@@ -62,11 +62,11 @@ class StegoInteractive:
         
         # Show welcome message
         welcome_text = """
-[bold cyan]Steganography Tool[/]
+[bold cyan]EZ-Steg[/]
     
 Available modes:
-• Production Mode: Encrypted payload, more overhead
-• Lite Mode: Simple and fast, no encryption
+• Production: Encrypted payload, more overhead
+• Lite: Simple and fast, no encryption
 
 Choose your mode in the settings menu.
 """
