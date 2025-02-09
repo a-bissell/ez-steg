@@ -1,4 +1,4 @@
-# EZ-Steg: 
+# EZ-Steg: Easy-to-use Steganography Tool
 
 A user-friendly steganography tool for embedding and extracting data in images, with support for both secure (encrypted) and low-overhead (un-encrypted) modes.
 
