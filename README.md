@@ -8,6 +8,10 @@ Also includes a tool to create carrier .png files for testing and exfiltration p
 ## Installation
 
 ```bash
+pip install ez-steg
+```
+OR
+```bash
 # Clone the repository
 git clone https://github.com/a-bissell/ez-steg.git
 
