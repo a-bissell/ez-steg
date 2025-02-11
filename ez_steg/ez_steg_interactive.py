@@ -20,9 +20,9 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.panel import Panel
 from rich.table import Table
 from rich import print as rprint
-from ez_steg_core import StegoProduction, SecurityError, ValidationError
+from .ez_steg_core import StegoProduction, SecurityError, ValidationError
 from PIL import Image
-from ez_steg_lite import StegoLite
+from .ez_steg_lite import StegoLite
 import math
 import numpy as np
 
@@ -62,7 +62,7 @@ class StegoInteractive:
         
         # Show welcome message
         welcome_text = """
-[bold cyan]EZ-Steg[/]
+[bold cyan]EZ-Steg by App13[/]
     
 Available modes:
 • Production: Encrypted payload, more overhead
@@ -742,6 +742,10 @@ Choose your mode in the settings menu.
         except Exception as e:
             self.console.print(f"[red]Error creating image: {e}[/]")
 
-if __name__ == "__main__":
+def main():
+    """Entry point for the ez-steg command."""
     app = StegoInteractive()
-    app.run() 
+    app.run()
+
+if __name__ == "__main__":
+    main() 

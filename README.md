@@ -8,6 +8,13 @@ Also includes a tool to create carrier .png files for testing and exfiltration p
 ## Installation
 
 ```bash
+pip install ez-steg
+```
+
+OR
+
+Clone the repository for development:
+```bash
 # Clone the repository
 git clone https://github.com/a-bissell/ez-steg.git
 
@@ -19,15 +26,19 @@ pip install -r .\requirements.txt
 
 # OPTIONAL: Install the package (only needed for automated tests/developers)
 pip install -e .
+```
 
 ## Usage
 
-### Running the Tool
+### After pip installation
+Simply run:
+```bash
+ez-steg
+```
+
+### If running from source
 ```bash
 python -m src.ez_steg_interactive
-
-```Powershell
-python .\src\ez_steg_interactive.py
 ```
 
 ## Features
