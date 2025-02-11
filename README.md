@@ -41,6 +41,29 @@ ez-steg
 python -m src.ez_steg_interactive
 ```
 
+### Example Operations
+
+#### Creating a Carrier Image
+1. Select "Create carrier image" from the menu
+2. Choose naming method (default timestamp or custom)
+3. Select data source (file or folder)
+4. Set margin factor (e.g., 1.2 for 20% extra space)
+5. Choose output directory
+
+#### Embedding Data
+1. Select "Embed data" from the menu
+2. Provide carrier image path
+3. Select data to embed (file or folder)
+4. Enter password (Production mode only)
+5. Confirm operation details
+
+#### Extracting Data
+1. Select "Extract data" from the menu
+2. Provide embedded image path
+3. Enter password (Production mode only)
+4. Specify output location
+5. Confirm extraction
+
 ## Features
 
 ### Two Operating Modes
@@ -68,29 +91,6 @@ python -m src.ez_steg_interactive
 3. **Create Carrier Image**: Generate a new carrier image
 4. **Switch Mode**: Toggle between Production and Lite modes
 5. **Exit**: Close the application
-
-### Example Operations
-
-#### Creating a Carrier Image
-1. Select "Create carrier image" from the menu
-2. Choose naming method (default timestamp or custom)
-3. Select data source (file or folder)
-4. Set margin factor (e.g., 1.2 for 20% extra space)
-5. Choose output directory
-
-#### Embedding Data
-1. Select "Embed data" from the menu
-2. Provide carrier image path
-3. Select data to embed (file or folder)
-4. Enter password (Production mode only)
-5. Confirm operation details
-
-#### Extracting Data
-1. Select "Extract data" from the menu
-2. Provide embedded image path
-3. Enter password (Production mode only)
-4. Specify output location
-5. Confirm extraction
 
 ## Development
 
