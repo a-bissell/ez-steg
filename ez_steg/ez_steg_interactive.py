@@ -20,11 +20,13 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.panel import Panel
 from rich.table import Table
 from rich import print as rprint
-from .ez_steg_core import StegoProduction, SecurityError, ValidationError
 from PIL import Image
-from .ez_steg_lite import StegoLite
 import math
 import numpy as np
+
+from ez_steg.ez_steg_core import StegoProduction, SecurityError, ValidationError
+from ez_steg.ez_steg_lite import StegoLite
+from ez_steg.ez_steg_emoji import StegoEmoji
 
 # Set up rich console
 console = Console()
@@ -67,39 +69,49 @@ class StegoInteractive:
 Available modes:
 • Production: Encrypted payload, more overhead
 • Lite: Simple and fast, no encryption
+• Emoji: Data hidden in emoji variation selectors
 
 Choose your mode in the settings menu.
 """
         self.console.print(Panel(welcome_text, expand=False))
     
     def switch_mode(self):
-        """Switch between production and lite modes."""
+        """Switch between available modes."""
         self.console.print("\n[bold cyan]Mode Selection[/]")
         self.console.print("\nAvailable modes:")
         table = Table(show_header=False)
         table.add_row("1. Production Mode", "[yellow]Full security with encryption[/]")
         table.add_row("2. Lite Mode", "[yellow]Simple and fast, no encryption[/]")
+        table.add_row("3. Emoji Mode", "[yellow]Hide data in emoji variation selectors[/]")
         self.console.print(table)
         
         choice = Prompt.ask(
             "\nSelect mode",
-            choices=["1", "2"],
+            choices=["1", "2", "3"],
             default="1"
         )
         
         old_mode = self.mode
-        self.mode = "production" if choice == "1" else "lite"
+        self.mode = {
+            "1": "production",
+            "2": "lite",
+            "3": "emoji"
+        }[choice]
         self.stego = None  # Reset stego engine
         
         if old_mode != self.mode:
             self.console.print(f"[green]Switched to {self.mode.title()} Mode[/]")
     
-    def initialize_stego(self, password: str = None):
+    def initialize_stego(self, password: str = None, base_emoji: str = None):
         """Initialize the appropriate stego engine."""
         if self.mode == "production":
             if not password:
                 password = Prompt.ask("Enter password for encryption", password=True)
             self.stego = StegoProduction(password)
+        elif self.mode == "emoji":
+            if not base_emoji:
+                base_emoji = Prompt.ask("Enter base emoji (press Enter for default)", default="🌟")
+            self.stego = StegoEmoji(base_emoji)
         else:
             self.stego = StegoLite()
     
@@ -326,155 +338,277 @@ Choose your mode in the settings menu.
             return None
     
     def embed_data(self):
-        """Embed data into an image."""
+        """Embed data into an image or emoji string."""
         self.console.print("\n[bold cyan]Embed Data[/]")
         
-        # Get carrier image
-        while True:
-            image_path = Prompt.ask("Enter carrier image path (PNG)")
-            image_path = self.validate_path(image_path)
-            if image_path and image_path.is_file() and image_path.suffix.lower() == '.png':
-                break
-            self.console.print("[red]Please provide a valid PNG image path[/]")
-        
-        # Get data to embed
-        while True:
-            data_path = Prompt.ask("Enter path to data file/folder to embed")
-            data_path = self.validate_path(data_path)
-            if data_path and (data_path.is_file() or data_path.is_dir()):
-                break
-            self.console.print("[red]Please provide a valid file/folder path[/]")
-        
-        # Initialize stego engine
-        if self.mode == "production":
-            password = Prompt.ask("Enter password for encryption", password=True)
-            self.stego = StegoProduction(password)
-        else:
-            self.stego = StegoLite()
-        
-        try:
-            # Prepare data and check capacity
-            if data_path.is_dir():
-                data_file = self.compress_folder(data_path)
-                if not data_file:
-                    return
-                data_size = data_file.stat().st_size
-            else:
-                data_file = data_path
-                data_size = data_path.stat().st_size
-            
-            # Create output path
-            output_path = image_path.parent / f"{image_path.stem}_embedded{image_path.suffix}"
-            
-            # Show operation summary
-            self.console.print(f"\n[yellow]Operation Summary:[/]")
+        if self.mode == "emoji":
+            # Ask for input type
+            self.console.print("\nInput type:")
             table = Table(show_header=False)
-            table.add_row("Mode", f"{self.mode.title()} Mode")
-            table.add_row("Input Image", str(image_path))
-            table.add_row("Data Source", str(data_path))
-            table.add_row("Output Image", str(output_path))
-            table.add_row("Data Size", self._format_size(data_size))
+            table.add_row("1. File/Folder", "[yellow]Embed data from a file or folder[/]")
+            table.add_row("2. Direct Text", "[yellow]Type or paste text directly[/]")
             self.console.print(table)
             
-            if not Confirm.ask("\nProceed with embedding?"):
-                if data_path.is_dir():
-                    data_file.unlink()
+            input_type = Prompt.ask(
+                "Choice",
+                choices=["1", "2"],
+                default="1"
+            )
+            
+            data = None
+            if input_type == "1":
+                # Get data to embed from file/folder
+                while True:
+                    data_path = Prompt.ask("Enter path to data file/folder to embed")
+                    data_path = self.validate_path(data_path)
+                    if data_path and (data_path.is_file() or data_path.is_dir()):
+                        break
+                    self.console.print("[red]Please provide a valid file/folder path[/]")
+                
+                try:
+                    # Prepare data
+                    if data_path.is_dir():
+                        data_file = self.compress_folder(data_path)
+                        if not data_file:
+                            return
+                        with open(data_file, 'rb') as f:
+                            data = f.read()
+                    else:
+                        with open(data_path, 'rb') as f:
+                            data = f.read()
+                except Exception as e:
+                    self.console.print(f"[red]Error reading data: {e}[/]")
+                    return
+                finally:
+                    if data_path.is_dir() and 'data_file' in locals():
+                        data_file.unlink()
+                
+                # Default output path based on input file
+                default_output = str(data_path) + "_emoji.txt"
+                
+            else:  # Direct text input
+                # Get text input
+                self.console.print("\nEnter the text to embed (press Ctrl+D or Ctrl+Z on a new line to finish):")
+                lines = []
+                try:
+                    while True:
+                        line = input()
+                        lines.append(line)
+                except (EOFError, KeyboardInterrupt):
+                    pass
+                
+                if not lines:
+                    self.console.print("[red]No text entered[/]")
+                    return
+                
+                # Join lines with newlines and encode as UTF-8
+                data = '\n'.join(lines).encode('utf-8')
+                
+                # Default output path with timestamp
+                timestamp = int(time.time())
+                default_output = f"encoded_text_{timestamp}_emoji.txt"
+            
+            if not data:
+                self.console.print("[red]No data to embed[/]")
                 return
             
-            with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                console=self.console,
-            ) as progress:
-                progress.add_task("Reading data...", total=None)
-                with open(data_file, 'rb') as f:
-                    data = f.read()
-                
-                progress.add_task("Embedding data...", total=None)
-                # Call embed with correct parameter order: data, input_path, output_path
-                self.stego.embed(data, str(image_path), str(output_path))
+            # Initialize stego engine
+            base_emoji = Prompt.ask("Enter base emoji (press Enter for default)", default="🌟")
+            self.stego = StegoEmoji(base_emoji)
             
-            # Clean up temporary file if needed
-            if data_path.is_dir():
-                data_file.unlink()
-            
-            self.console.print(f"\n[green]✓ Data embedded successfully![/]")
-            self.console.print(f"Output saved to: {output_path}")
-            
-        except Exception as e:
-            self.console.print(f"[red]Error embedding data: {e}[/]")
-            if data_path.is_dir() and data_file:
-                data_file.unlink()
-    
-    def extract_data(self):
-        """Extract data from an image."""
-        self.console.print("\n[bold cyan]Extract Data[/]")
-        
-        # Get carrier image
-        while True:
-            image_path = Prompt.ask("Enter image path (PNG)")
-            image_path = self.validate_path(image_path)
-            if image_path and image_path.is_file() and image_path.suffix.lower() == '.png':
-                break
-            self.console.print("[red]Please provide a valid PNG image path[/]")
-        
-        # Initialize stego engine
-        if self.mode == "production":
-            password = Prompt.ask("Enter password for decryption", password=True)
-            self.stego = StegoProduction(password)
-        else:
-            self.stego = StegoLite()
-        
-        # Get output path
-        while True:
-            output_path = Prompt.ask("Enter output path for extracted data (including filename)")
+            # Get output path
+            output_path = Prompt.ask(
+                "Enter output path (press Enter for default)",
+                default=default_output
+            )
             output_path = Path(output_path)
             
-            # Create parent directory if it doesn't exist
+            if output_path.exists():
+                if not Confirm.ask(f"[yellow]File {output_path} already exists. Overwrite?[/]"):
+                    return
+            
+            # Show size estimate
+            char_count, human_size = self.stego.get_size_estimate(len(data))
+            self.console.print(f"\n[yellow]Size estimate: {human_size}[/]")
+            
+            if not Confirm.ask("\nProceed with embedding?"):
+                return
+            
             try:
-                output_path.parent.mkdir(parents=True, exist_ok=True)
-                # Test if we can write to this location
-                if output_path.exists():
-                    if not Confirm.ask(f"[yellow]File {output_path} already exists. Overwrite?[/]"):
-                        continue
-                # Try to create/open the file
-                with open(output_path, 'wb') as f:
-                    pass
-                break
-            except (OSError, PermissionError) as e:
-                self.console.print(f"[red]Cannot write to this location: {e}[/]")
-                self.console.print("[yellow]Please provide a complete file path, not just a directory[/]")
-                continue
-        
-        # Show operation summary
-        self.console.print(f"\n[yellow]Operation Summary:[/]")
-        table = Table(show_header=False)
-        table.add_row("Mode", f"{self.mode.title()} Mode")
-        table.add_row("Input Image", str(image_path))
-        table.add_row("Output Path", str(output_path))
-        self.console.print(table)
-        
-        if not Confirm.ask("\nProceed with extraction?"):
-            return
-        
-        try:
-            with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                console=self.console,
-            ) as progress:
-                progress.add_task("Extracting data...", total=None)
-                data = self.stego.extract(str(image_path))
+                # Embed data
+                with Progress(
+                    SpinnerColumn(),
+                    TextColumn("[progress.description]{task.description}"),
+                    console=self.console,
+                ) as progress:
+                    progress.add_task("Embedding data...", total=None)
+                    emoji_text = self.stego.embed(data)
+                    
+                    # Save result
+                    with open(output_path, 'w', encoding='utf-8') as f:
+                        f.write(emoji_text)
                 
-                progress.add_task("Saving data...", total=None)
-                with open(output_path, 'wb') as f:
-                    f.write(data)
+                self.console.print(f"\n[green]✓ Data embedded successfully![/]")
+                self.console.print(f"Output saved to: {output_path}")
+                
+            except Exception as e:
+                self.console.print(f"[red]Error embedding data: {e}[/]")
             
-            self.console.print(f"\n[green]✓ Data extracted successfully![/]")
-            self.console.print(f"Output saved to: {output_path}")
+        else:
+            # Get carrier image
+            while True:
+                image_path = Prompt.ask("Enter carrier image path (PNG)")
+                image_path = self.validate_path(image_path)
+                if image_path and image_path.is_file() and image_path.suffix.lower() == '.png':
+                    break
+                self.console.print("[red]Please provide a valid PNG image path[/]")
             
-        except Exception as e:
-            self.console.print(f"[red]Error extracting data: {e}[/]")
+            # Get data to embed
+            while True:
+                data_path = Prompt.ask("Enter path to data file/folder to embed")
+                data_path = self.validate_path(data_path)
+                if data_path and (data_path.is_file() or data_path.is_dir()):
+                    break
+                self.console.print("[red]Please provide a valid file/folder path[/]")
+            
+            try:
+                # Prepare data and check capacity
+                if data_path.is_dir():
+                    data_file = self.compress_folder(data_path)
+                    if not data_file:
+                        return
+                    data_size = data_file.stat().st_size
+                else:
+                    data_file = data_path
+                    data_size = data_path.stat().st_size
+                
+                # Create output path
+                output_path = image_path.parent / f"{image_path.stem}_embedded{image_path.suffix}"
+                
+                # Show operation summary
+                self.console.print(f"\n[yellow]Operation Summary:[/]")
+                table = Table(show_header=False)
+                table.add_row("Mode", f"{self.mode.title()} Mode")
+                table.add_row("Input Image", str(image_path))
+                table.add_row("Data Source", str(data_path))
+                table.add_row("Output Image", str(output_path))
+                table.add_row("Data Size", self._format_size(data_size))
+                self.console.print(table)
+                
+                if not Confirm.ask("\nProceed with embedding?"):
+                    if data_path.is_dir():
+                        data_file.unlink()
+                    return
+                
+                with Progress(
+                    SpinnerColumn(),
+                    TextColumn("[progress.description]{task.description}"),
+                    console=self.console,
+                ) as progress:
+                    progress.add_task("Reading data...", total=None)
+                    with open(data_file, 'rb') as f:
+                        data = f.read()
+                
+                    progress.add_task("Embedding data...", total=None)
+                    # Call embed with correct parameter order: data, input_path, output_path
+                    self.stego.embed(data, str(image_path), str(output_path))
+                
+                # Clean up temporary file if needed
+                if data_path.is_dir():
+                    data_file.unlink()
+                
+                self.console.print(f"\n[green]✓ Data embedded successfully![/]")
+                self.console.print(f"Output saved to: {output_path}")
+                
+            except Exception as e:
+                self.console.print(f"[red]Error embedding data: {e}[/]")
+                if data_path.is_dir() and data_file:
+                    data_file.unlink()
+    
+    def extract_data(self):
+        """Extract data from an image or emoji string."""
+        self.console.print("\n[bold cyan]Extract Data[/]")
+        
+        if self.mode == "emoji":
+            # Get input file
+            while True:
+                input_path = Prompt.ask("Enter path to emoji text file")
+                input_path = self.validate_path(input_path)
+                if input_path and input_path.is_file():
+                    break
+                self.console.print("[red]Please provide a valid file path[/]")
+            
+            # Initialize stego engine
+            base_emoji = Prompt.ask("Enter base emoji (press Enter for default)", default="🌟")
+            self.stego = StegoEmoji(base_emoji)
+            
+            # Get output path
+            while True:
+                output_path = Prompt.ask("Enter output path for extracted data (including filename)")
+                output_path = Path(output_path)
+                
+                try:
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
+                    if output_path.exists():
+                        if not Confirm.ask(f"[yellow]File {output_path} already exists. Overwrite?[/]"):
+                            continue
+                    with open(output_path, 'wb') as f:
+                        pass
+                    break
+                except (OSError, PermissionError) as e:
+                    self.console.print(f"[red]Cannot write to this location: {e}[/]")
+                    continue
+            
+            try:
+                # Read emoji text
+                with open(input_path, 'r', encoding='utf-8') as f:
+                    emoji_text = f.read()
+                
+                with Progress(
+                    SpinnerColumn(),
+                    TextColumn("[progress.description]{task.description}"),
+                    console=self.console,
+                ) as progress:
+                    progress.add_task("Extracting data...", total=None)
+                    data = self.stego.extract(emoji_text)
+                    
+                    progress.add_task("Saving data...", total=None)
+                    with open(output_path, 'wb') as f:
+                        f.write(data)
+                
+                self.console.print(f"\n[green]✓ Data extracted successfully![/]")
+                self.console.print(f"Output saved to: {output_path}")
+                
+            except Exception as e:
+                self.console.print(f"[red]Error extracting data: {e}[/]")
+            
+        else:
+            # Get carrier image
+            while True:
+                image_path = Prompt.ask("Enter image path (PNG)")
+                image_path = self.validate_path(image_path)
+                if image_path and image_path.is_file() and image_path.suffix.lower() == '.png':
+                    break
+                self.console.print("[red]Please provide a valid PNG image path[/]")
+            
+            try:
+                with Progress(
+                    SpinnerColumn(),
+                    TextColumn("[progress.description]{task.description}"),
+                    console=self.console,
+                ) as progress:
+                    progress.add_task("Extracting data...", total=None)
+                    data = self.stego.extract(str(image_path))
+                    
+                    progress.add_task("Saving data...", total=None)
+                    with open(image_path, 'wb') as f:
+                        f.write(data)
+                
+                self.console.print(f"\n[green]✓ Data extracted successfully![/]")
+                self.console.print(f"Output saved to: {image_path}")
+                
+            except Exception as e:
+                self.console.print(f"[red]Error extracting data: {e}[/]")
     
     def show_settings(self):
         """Display and modify settings."""
