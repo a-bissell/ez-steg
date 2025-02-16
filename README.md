@@ -2,6 +2,8 @@
 
 A powerful and easy-to-use steganography tool with multiple modes of operation.
 
+![image](https://github.com/user-attachments/assets/f72dd251-9235-42ff-9379-dfff01715dbf)
+
 ## Features
 
 ### Multiple Steganography Modes
